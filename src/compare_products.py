@@ -5,7 +5,9 @@ whether the two products agree on WHEN heavy rain happens and how annual maxima
 move from year to year.
 
 Usage:
-    python src/compare_products.py 1981 2025
+    python src/compare_products.py 1981 2025 [lag]
+lag k pairs CHIRPS day d with IMD day d-k. From lag_scan.py the best value is -1
+(CHIRPS day d overlaps IMD day d+1 most), so run: python src/compare_products.py 1981 2025 -1
 Reads  data/processed/chirps_district_daily_<a>_<b>.csv and imd_district_daily_<a>_<b>.csv
 Writes data/processed/product_agreement.csv
 """
@@ -52,6 +54,9 @@ if __name__ == "__main__":
     a, b = sys.argv[1], sys.argv[2]
     c = load(OUT / f"chirps_district_daily_{a}_{b}.csv", "chirps")
     i = load(OUT / f"imd_district_daily_{a}_{b}.csv", "imd")
+    lag = int(sys.argv[3]) if len(sys.argv) > 3 else 0
+    i["date"] = i["date"] + pd.Timedelta(days=lag)   # relabel IMD days so they match CHIRPS days
+    print(f"lag = {lag} (CHIRPS day d paired with IMD day d{-lag:+d})")
     m = c.merge(i, on=["date", "district"], how="inner")
     print(f"merged rows: {len(m)}  (chirps {len(c)}, imd {len(i)})")
     res = pd.DataFrame({d: agreement(g) for d, g in m.groupby("district")}).T.round(2)
