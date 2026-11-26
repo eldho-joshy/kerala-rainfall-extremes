@@ -1,0 +1,9 @@
+requests
+xarray
+netCDF4
+geopandas
+regionmask
+numpy
+pandas
+matplotlib
+pymannkendall
