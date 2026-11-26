@@ -1,9 +1,5 @@
-requests
-xarray
-netCDF4
-geopandas
-regionmask
-numpy
+earthengine-api
 pandas
+numpy
 matplotlib
 pymannkendall
