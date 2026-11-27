@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kerala rainfall: where do the products agree?</title>
+<meta name="description" content="Per-district agreement between CHIRPS, IMD and ERA5-Land rainfall for Kerala, 1981-2025.">
+<style>
+:root{
+  --bg:#f6f5f1; --surface:#ffffff; --ink:#1d2327; --muted:#5d6670; --line:#d9d6cd;
+  --agree:#2a9d8f; --partial:#e9b44c; --none:#d1685f; --focus:#1d4ed8;
+  --agree-ink:#0d3f3a; --partial-ink:#4a3410; --none-ink:#5a1f1b;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14181b; --surface:#1d2327; --ink:#eceae4; --muted:#a2abb3; --line:#363e45;
+    --agree:#3fb8a8; --partial:#e2a93a; --none:#e0766d; --focus:#7aa2ff;
+    --agree-ink:#cdeee9; --partial-ink:#f4e2bd; --none-ink:#f6d4d0;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14181b; --surface:#1d2327; --ink:#eceae4; --muted:#a2abb3; --line:#363e45;
+  --agree:#3fb8a8; --partial:#e2a93a; --none:#e0766d; --focus:#7aa2ff;
+  --agree-ink:#cdeee9; --partial-ink:#f4e2bd; --none-ink:#f6d4d0;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:clamp(1.4rem,3.2vw,2rem);line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 16px;max-width:62ch}
+.banner{border-left:4px solid var(--partial);background:var(--surface);padding:10px 14px;border-radius:0 8px 8px 0;margin:0 0 18px;font-size:.95rem}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.controls button{font:inherit;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;min-height:40px}
+.controls button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(260px,420px) 1fr;gap:20px;align-items:start}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.mapbox{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px}
+svg#map{display:block;width:100%;height:auto;max-height:78vh}
+.d{stroke:var(--surface);stroke-width:.012;stroke-linejoin:round;cursor:pointer;transition:filter .12s}
+.d:hover{filter:brightness(1.08)}
+.d.sel{stroke:var(--ink);stroke-width:.03}
+.lab{pointer-events:none;fill:var(--ink);paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round;font-weight:600}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.panel h2{margin:0 0 4px;font-size:1.25rem}
+.headline{font-size:1.05rem;margin:0 0 12px}
+.chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.85rem;font-weight:600}
+.chip.agree{background:var(--agree);color:#06201d}
+.chip.partial{background:var(--partial);color:#2b1d04}
+.chip.none{background:var(--none);color:#2d0c09}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 14px;padding:0;list-style:none;font-size:.9rem}
+.legend li{display:flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:3px;display:inline-block;border:1px solid var(--line)}
+.pair{margin:12px 0 0}
+.pair .row{display:flex;justify-content:space-between;gap:8px;font-size:.92rem;flex-wrap:wrap}
+.pair .num{font-variant-numeric:tabular-nums;color:var(--muted)}
+.pair svg{display:block;width:100%;height:22px}
+.note{color:var(--muted);font-size:.9rem;margin:14px 0 0}
+details{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 16px}
+summary{cursor:pointer;font-weight:600}
+details ul{margin:8px 0 4px;padding-left:20px}
+footer{margin-top:22px;color:var(--muted);font-size:.85rem}
+a{color:var(--focus)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Kerala rainfall: where do the products agree?</h1>
+  <p class="sub">Three daily rainfall products (CHIRPS, IMD, ERA5-Land), 14 districts, 1981&ndash;2025. For each district: do the products agree on which <em>years</em> were extreme?</p>
+  <div class="banner"><strong>Agreement is not accuracy.</strong> There is no station ground truth here. A district is &ldquo;agree&rdquo; when the products move together year to year, not when any of them is right.</div>
+
+  <div class="controls" role="group" aria-label="Measure">
+    <button type="button" data-m="extremes" aria-pressed="true">Extremes (wettest 7 days of the year)</button>
+    <button type="button" data-m="totals" aria-pressed="false">Totals (June&ndash;September)</button>
+  </div>
+
+  <div class="grid">
+    <div class="mapbox"><svg id="map" role="group" aria-label="Map of Kerala districts coloured by agreement tier"></svg></div>
+    <div class="panel" id="panel" aria-live="polite"></div>
+  </div>
+
+  <details>
+    <summary>How to read this, and what it cannot tell you</summary>
+    <ul>
+      <li><strong>Method:</strong> for each product, take every year&rsquo;s maximum 7-day rainfall (or the June&ndash;September total) per district, then rank-correlate the 45 yearly values between each pair of products. 95% intervals come from resampling years.</li>
+      <li><strong>Tiers (fixed in advance):</strong> <em>agree</em> = all three pairs have an interval entirely above 0; <em>partial</em> = at least one pair does, not all; <em>none</em> = no pair does.</li>
+      <li><strong>&ldquo;Agree&rdquo; is a low bar.</strong> It means significantly positive, not strong. Read the correlation numbers.</li>
+      <li><strong>Boundaries:</strong> CHIRPS and ERA5-Land use FAO GAUL 2015 (a deprecated version, with a visible Idukki/Ernakulam offset). IMD uses its own district outlines, which may differ, and that alone could lower agreement in some districts.</li>
+      <li><strong>Small sample:</strong> 45 years, 14 districts &times; 3 pairs tested with no multiple-comparison correction. Districts near a tier boundary could flip.</li>
+      <li><strong>Day alignment:</strong> IMD days end at 08:30 IST, so IMD day d+1 was matched to CHIRPS day d.</li>
+    </ul>
+  </details>
+  <footer>Products: CHIRPS v2 (UCSB-CHG), IMD gridded rainfall (India Meteorological Department), ERA5-Land (ECMWF), via Google Earth Engine and imdlib. Code and full findings in the project README.</footer>
+</div>
+
+<script>
+/*DATA*/
+const TIER = {agree:"Agreement", partial:"Partial agreement", none:"No demonstrated agreement"};
+const PAIRNAME = {"chirps-imd":"CHIRPS ↔ IMD","chirps-era5":"CHIRPS ↔ ERA5-Land","imd-era5":"IMD ↔ ERA5-Land"};
+const GHATS = ["Idukki","Wayanad","Pathanamthitta"];
+const svg = document.getElementById("map"), panel = document.getElementById("panel");
+const NS = "http://www.w3.org/2000/svg";
+let measure = "extremes", selected = null;
+
+const feats = DATA.geo.features;
+let minLon=1e9,maxLon=-1e9,minLat=1e9,maxLat=-1e9;
+function eachRing(g, fn){ (g.type==="Polygon"?[g.coordinates]:g.coordinates).forEach(poly=>poly.forEach((ring,i)=>fn(ring,i))); }
+feats.forEach(f=>eachRing(f.geometry,r=>r.forEach(([x,y])=>{minLon=Math.min(minLon,x);maxLon=Math.max(maxLon,x);minLat=Math.min(minLat,y);maxLat=Math.max(maxLat,y);})));
+const kx = Math.cos(((minLat+maxLat)/2)*Math.PI/180);
+const P = ([lon,lat]) => [(lon-minLon)*kx, maxLat-lat];
+const W=(maxLon-minLon)*kx, H=maxLat-minLat, pad=0.08;
+svg.setAttribute("viewBox", `${-pad} ${-pad} ${W+2*pad} ${H+2*pad}`);
+
+const defs = document.createElementNS(NS,"defs");
+defs.innerHTML = `<pattern id="hatch" width=".05" height=".05" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <rect width=".05" height=".05" fill="var(--none)"/><rect width=".02" height=".05" fill="rgba(0,0,0,.28)"/></pattern>`;
+svg.appendChild(defs);
+
+function ringArea(r){let a=0;for(let i=0;i<r.length-1;i++){a+=r[i][0]*r[i+1][1]-r[i+1][0]*r[i][1];}return a/2;}
+function centroid(g){
+  let best=null,ba=0;
+  eachRing(g,(r,i)=>{ if(i===0){const a=Math.abs(ringArea(r)); if(a>ba){ba=a;best=r;}} });
+  let cx=0,cy=0,a=0; for(let i=0;i<best.length-1;i++){const f=best[i][0]*best[i+1][1]-best[i+1][0]*best[i][1]; a+=f; cx+=(best[i][0]+best[i+1][0])*f; cy+=(best[i][1]+best[i+1][1])*f;}
+  a/=2; return [cx/(6*a), cy/(6*a)];
+}
+const paths = {}, labels = {}, labelPos = {};
+feats.forEach(f=>{
+  const name=f.properties.name;
+  let d=""; eachRing(f.geometry,r=>{ d += "M"+r.map(p=>P(p).map(v=>v.toFixed(4)).join(",")).join("L")+"Z"; });
+  const p=document.createElementNS(NS,"path");
+  p.setAttribute("d",d); p.setAttribute("fill-rule","evenodd"); p.setAttribute("class","d");
+  p.setAttribute("tabindex","0"); p.setAttribute("role","button");
+  p.addEventListener("click",()=>select(name));
+  p.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();select(name);} });
+  svg.appendChild(p); paths[name]=p;
+  labelPos[name]=P(centroid(f.geometry));
+});
+// labels go on top of every polygon, so no district can cover another's name
+feats.forEach(f=>{
+  const name=f.properties.name, [cx,cy]=labelPos[name];
+  const t=document.createElementNS(NS,"text"); t.setAttribute("x",cx); t.setAttribute("y",cy);
+  t.setAttribute("text-anchor","middle"); t.setAttribute("class","lab"); t.textContent=name;
+  svg.appendChild(t); labels[name]=t;
+});
+
+function fmt(x){return (x>=0?"":"−")+Math.abs(x).toFixed(2);}
+function paint(){
+  feats.forEach(f=>{
+    const n=f.properties.name, r=DATA.rel[n]&&DATA.rel[n][measure], p=paths[n];
+    if(!r){p.setAttribute("fill","var(--line)");p.setAttribute("aria-label",n+": no data");return;}
+    p.setAttribute("fill", r.tier==="none" ? "url(#hatch)" : `var(--${r.tier})`);
+    p.setAttribute("aria-label", `${n}: ${TIER[r.tier]}, mean correlation ${fmt(r.mean_r)}`);
+    p.classList.toggle("sel", n===selected);
+  });
+  sizeLabels();
+}
+function sizeLabels(){
+  const k = svg.getBoundingClientRect().width / (W+2*pad) || 100;
+  const fs = Math.max(8, Math.min(12, 11)) / k;
+  const left=-pad, right=W+pad;
+  Object.entries(labels).forEach(([n,t])=>{
+    t.setAttribute("font-size", fs); t.style.strokeWidth = (3/k)+"px";
+    t.setAttribute("x", labelPos[n][0]);
+    const w = t.getBBox().width;                      // shift label so it stays inside the map area
+    let x = labelPos[n][0];
+    if (x - w/2 < left) x = left + w/2;
+    if (x + w/2 > right) x = right - w/2;
+    t.setAttribute("x", x);
+  });
+}
+window.addEventListener("resize", sizeLabels);
+
+function counts(){const c={agree:0,partial:0,none:0};feats.forEach(f=>{const r=DATA.rel[f.properties.name]?.[measure]; if(r)c[r.tier]++;});return c;}
+function legend(){
+  return `<ul class="legend">
+   <li><span class="sw" style="background:var(--agree)"></span>Agreement</li>
+   <li><span class="sw" style="background:var(--partial)"></span>Partial</li>
+   <li><span class="sw" style="background:repeating-linear-gradient(45deg,var(--none) 0 3px,rgba(0,0,0,.3) 3px 5px)"></span>None demonstrated</li></ul>`;
+}
+function summary(){
+  const c=counts(), N=feats.length;
+  const label = measure==="extremes" ? "year-to-year extremes (wettest 7 days)" : "year-to-year June–September totals";
+  const head = c.agree===N ? `All ${N} districts: the three products agree on ${label}.`
+    : `Only ${c.agree} of ${N} districts: all three products agree on ${label}.`;
+  const g = GHATS.map(n=>({n,t:DATA.rel[n]?.[measure]?.tier})).filter(x=>x.t);
+  const weak = g.filter(x=>x.t!=="agree");
+  const ghats = weak.length ? `<p class="note"><strong>Western Ghats districts</strong> (${weak.map(x=>x.n).join(", ")}) fall short of full agreement: results for them depend on which product you use.</p>` : "";
+  panel.innerHTML = `<h2>${measure==="extremes"?"Extremes":"Totals"}</h2><p class="headline">${head}</p>${legend()}
+    <p class="note">${c.agree} agree &middot; ${c.partial} partial &middot; ${c.none} none demonstrated.</p>${ghats}
+    <p class="note">Select a district on the map for the numbers behind its tier.</p>`;
+}
+function rangeBar(p){
+  const x=v=>((v+1)/2)*100, ok=p.lo>0;
+  return `<svg viewBox="0 0 100 22" preserveAspectRatio="none" role="img" aria-label="correlation ${fmt(p.r)}, interval ${fmt(p.lo)} to ${fmt(p.hi)}">
+   <line x1="0" y1="11" x2="100" y2="11" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+   <line x1="${x(0)}" y1="3" x2="${x(0)}" y2="19" stroke="var(--muted)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+   <rect x="${x(p.lo)}" y="7" width="${Math.max(.8,x(p.hi)-x(p.lo))}" height="8" rx="2" fill="${ok?"var(--agree)":"var(--muted)"}" opacity=".55"/>
+   <line x1="${x(p.r)}" y1="4" x2="${x(p.r)}" y2="18" stroke="var(--ink)" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg>`;
+}
+function detail(n){
+  const r=DATA.rel[n]?.[measure]; if(!r){summary();return;}
+  const fails=Object.entries(r.pairs).filter(([k,p])=>p.lo<=0).map(([k])=>PAIRNAME[k]);
+  const why = r.tier==="agree" ? "Every pair of products shows a positive year-to-year correlation (95% interval above zero). That means consistent, not accurate."
+    : r.tier==="partial" ? `Some pairs agree, but ${fails.join(" and ")} ${fails.length>1?"show":"shows"} no demonstrated agreement. Treat results for this district as product-dependent.`
+    : "No pair of products shows demonstrated agreement. Any extreme-rainfall result here would depend on the product chosen.";
+  const rows=Object.entries(r.pairs).map(([k,p])=>`<div class="pair"><div class="row"><span>${PAIRNAME[k]}</span><span class="num">r = ${fmt(p.r)} &nbsp;(${fmt(p.lo)} to ${fmt(p.hi)})</span></div>${rangeBar(p)}</div>`).join("");
+  panel.innerHTML = `<h2>${n}</h2><p class="headline"><span class="chip ${r.tier}">${TIER[r.tier]}</span> &nbsp; mean r = ${fmt(r.mean_r)}</p>
+    <p>${why}</p>${rows}
+    <p class="note">Spearman rank correlation of ${r.years} yearly values (${r.label}). Bar = 95% bootstrap interval, tick = estimate, line = zero. <button type="button" id="back" style="font:inherit;background:none;border:0;color:var(--focus);cursor:pointer;padding:0;text-decoration:underline">Back to summary</button></p>`;
+  document.getElementById("back").onclick=()=>select(null);
+}
+function select(n){ selected=n; paint(); n?detail(n):summary(); }
+document.querySelectorAll(".controls button").forEach(b=>b.addEventListener("click",()=>{
+  measure=b.dataset.m; document.querySelectorAll(".controls button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  paint(); selected?detail(selected):summary();
+}));
+paint(); summary();
+</script>
+</body>
+</html>
