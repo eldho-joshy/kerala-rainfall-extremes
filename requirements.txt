@@ -1,5 +1,5 @@
 earthengine-api
 pandas
 numpy
-matplotlib
-pymannkendall
+scipy
+imdlib
