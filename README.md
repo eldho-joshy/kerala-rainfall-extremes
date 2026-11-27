@@ -1,6 +1,6 @@
 # How far can gridded rainfall be trusted for extremes in Kerala districts?
 
-**Live map:** https://eldho-joshy.github.io/kerala-rainfall-extremes/
+**Interactive map:** https://eldho-joshy.github.io/kerala-rainfall-extremes/
 
 ![Map of Kerala districts coloured by how well three rainfall products agree, with one district selected](docs/map.png)
 
