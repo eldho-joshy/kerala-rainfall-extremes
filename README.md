@@ -1,5 +1,6 @@
 # How far can gridded rainfall be trusted for extremes in Kerala districts?
 
+**Live map:** https://eldho-joshy.github.io/kerala-rainfall-extremes/
 A benchmark of three daily rainfall products for Kerala's 14 districts, 1981–2025:
 **CHIRPS v2** (satellite + gauge blend, 0.05°), **IMD gridded rainfall** (gauge-based, 0.25°) and
 **ERA5-Land** (reanalysis, 0.1°).
