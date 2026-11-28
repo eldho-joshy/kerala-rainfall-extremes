@@ -71,7 +71,7 @@ measure of damage. "Agreement" below means the products are *consistent with eac
 - No station ground truth. CHIRPS and IMD both ingest rain-gauge data, so they are not fully independent.
 - 7 time scales × 3 pairs tested, and 14 districts × 3 pairs for the tiers, with no multiple-comparison correction.
 - IMD is 0.25° (~25 km); small districts such as Alappuzha span few cells.
-- **Different district polygons per product (tested):** the original IMD series uses `imdlib`'s district outlines; CHIRPS and ERA5-Land use FAO GAUL 2015. Re-clipping IMD with the GAUL polygons changed per-district agreement by a median of 0.01 (max 0.10, Idukki), so geometry does not explain the results; Idukki is the one district where it matters (`results/imd_polygon_robustness.csv`). Tiers were not re-run with the re-clipped series.
+- **Different district polygons per product (tested):** the original IMD series uses `imdlib`'s district outlines; CHIRPS and ERA5-Land use FAO GAUL 2015. Re-clipping IMD with the GAUL polygons changed per-district agreement by a median of 0.01 (max 0.10, Idukki), so geometry does not explain the results; Idukki is the one district where it matters (`results/imd_polygon_robustness.csv`). All 28 district tiers are unchanged when the tiers are re-run with the re-clipped series (largest shift: Idukki 7-day mean r 0.25 → 0.31, still "partial").
 
 ## Reproduce
 ```
@@ -85,10 +85,13 @@ python src/accumulation_scan.py 1981 2025 -1
 python src/three_way.py 1981 2025
 python src/validate_2018.py
 python src/reliability.py 1981 2025                                   # per-district tiers
+python src/reclip_imd.py 1981 2025                                    # IMD re-clipped to GAUL polygons
+python src/robustness_imd.py 1981 2025                                # robustness: agreement with re-clipped IMD
+python src/reliability.py 1981 2025 2000 gaul                         # tiers with re-clipped IMD
 python src/export_boundaries.py --project <your-cloud-project>        # district polygons for the map
 python src/build_map.py                                               # writes docs/index.html
 ```
-Raw data is gitignored; all processing is in `src/`. The map is a single self-contained page in `docs/`, published with GitHub Pages.
+Raw data is gitignored; all processing is in `src/`. Result tables (agreement by time scale, per-district tiers, polygon robustness) are in `results/`, so you can check the numbers without running the exports. The map is a single self-contained page in `docs/`, published with GitHub Pages.
 
 ## Status
 - [x] CHIRPS, IMD, ERA5-Land district exports 1981–2025
@@ -96,5 +99,5 @@ Raw data is gitignored; all processing is in `src/`. The map is a single self-co
 - [x] Agreement by time scale with bootstrap CIs, three-way outlier test
 - [x] Per-district reliability tiers
 - [x] Interactive map (GitHub Pages)
-- [ ] Re-clip IMD with the same GAUL polygons as the other two products (robustness check)
+- [x] Re-clip IMD with the same GAUL polygons as the other two products (robustness check): agreement changes by a median of 0.01, no tier changes
 - [ ] Try the GAUL 2025 boundaries
