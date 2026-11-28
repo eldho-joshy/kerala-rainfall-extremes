@@ -86,7 +86,7 @@ a{color:var(--focus)}
       <li><strong>Method:</strong> for each product, take every year&rsquo;s maximum 7-day rainfall (or the June&ndash;September total) per district, then rank-correlate the 45 yearly values between each pair of products. 95% intervals come from resampling years.</li>
       <li><strong>Tiers (fixed in advance):</strong> <em>agree</em> = all three pairs have an interval entirely above 0; <em>partial</em> = at least one pair does, not all; <em>none</em> = no pair does.</li>
       <li><strong>&ldquo;Agree&rdquo; is a low bar.</strong> It means significantly positive, not strong. Read the correlation numbers.</li>
-      <li><strong>Boundaries:</strong> CHIRPS and ERA5-Land use FAO GAUL 2015 (a deprecated version, with a visible Idukki/Ernakulam offset). IMD uses its own district outlines, which may differ, and that alone could lower agreement in some districts.</li>
+      <li><strong>Boundaries:</strong> CHIRPS and ERA5-Land use FAO GAUL 2015 (a deprecated version, with a visible Idukki/Ernakulam offset). IMD&rsquo;s original series uses its own district outlines. Re-clipping IMD to the same GAUL polygons changed agreement by a median of 0.01 and moved no district to a different tier, so the outline choice does not explain these results (the largest shift was Idukki).</li>
       <li><strong>Small sample:</strong> 45 years, 14 districts &times; 3 pairs tested with no multiple-comparison correction. Districts near a tier boundary could flip.</li>
       <li><strong>Day alignment:</strong> IMD days end at 08:30 IST, so IMD day d+1 was matched to CHIRPS day d.</li>
     </ul>
@@ -174,7 +174,7 @@ window.addEventListener("resize", sizeLabels);
 function counts(){const c={agree:0,partial:0,none:0};feats.forEach(f=>{const r=DATA.rel[f.properties.name]?.[measure]; if(r)c[r.tier]++;});return c;}
 function legend(){
   return `<ul class="legend">
-   <li><span class="sw" style="background:var(--agree)"></span>Agreement</li>
+   <li><span class="sw" style="background:var(--agree)"></span>Agreement (positive, not necessarily strong)</li>
    <li><span class="sw" style="background:var(--partial)"></span>Partial</li>
    <li><span class="sw" style="background:repeating-linear-gradient(45deg,var(--none) 0 3px,rgba(0,0,0,.3) 3px 5px)"></span>None demonstrated</li></ul>`;
 }
