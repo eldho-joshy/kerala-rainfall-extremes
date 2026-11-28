@@ -71,10 +71,7 @@ measure of damage. "Agreement" below means the products are *consistent with eac
 - No station ground truth. CHIRPS and IMD both ingest rain-gauge data, so they are not fully independent.
 - 7 time scales × 3 pairs tested, and 14 districts × 3 pairs for the tiers, with no multiple-comparison correction.
 - IMD is 0.25° (~25 km); small districts such as Alappuzha span few cells.
-- **Different district polygons per product:** CHIRPS and ERA5-Land use FAO GAUL 2015; IMD uses `imdlib`'s built-in
-  district outlines. Where outlines differ, part of the "disagreement" may be different areas, not different rain.
-  Not yet tested.
-- GAUL 2015 is deprecated and has a visible Idukki/Ernakulam offset.
+- **Different district polygons per product (tested):** the original IMD series uses `imdlib`'s district outlines; CHIRPS and ERA5-Land use FAO GAUL 2015. Re-clipping IMD with the GAUL polygons changed per-district agreement by a median of 0.01 (max 0.10, Idukki), so geometry does not explain the results; Idukki is the one district where it matters (`results/imd_polygon_robustness.csv`). Tiers were not re-run with the re-clipped series.
 
 ## Reproduce
 ```
